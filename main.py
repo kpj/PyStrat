@@ -4,48 +4,52 @@ import matplotlib.pyplot as plt
 from tqdm import trange
 
 
-def get_neighbor(i, j, N):
+def get_neighbor(i, N):
+    x,y = i
     r = lambda: np.random.randint(-1,2)
-    return (i+r()) % N, (j+r()) % N
+    return (x+r()) % N, (y+r()) % N
 
-def get_threshold(i, j, lattice):
-    val = lattice[i,j]
+def get_threshold(i, lattice):
+    val = lattice[i]
     return np.sum(lattice==val) / lattice.size
 
 def main():
     N = 128
-    tmax = 10000
-    alpha = 2.5e-5
+    tmax = 100000
+    alpha = 25e-6
     strategy_num = 50
 
     lattice = np.random.randint(strategy_num, size=(N,N))
-    strats = {}
+    strats = {} # strategy history of each node
     strat_nums = []
+
+    get = lambda: tuple(np.random.randint(N, size=2)) # get index of random node in system
 
     for index, s in np.ndenumerate(lattice):
         strats[index] = set([s])
 
     for t in trange(tmax):
-        cur = lattice.copy()
+        i = get()
+        j = get_neighbor(i, N)
 
-        i,j = np.random.randint(N, size=2)
+        thres = get_threshold(j, lattice)
+        if np.random.random() < thres and not lattice[j] in strats[i]:
+            lattice[i] = lattice[j]
+            strats[i].add(lattice[i])
+
         if np.random.random() < alpha:
-            cur[i,j] = strategy_num
+            k = get()
+            lattice[k] = strategy_num
+            strats[k].add(lattice[k])
             strategy_num += 1
-        else:
-            k,l = get_neighbor(i,j,N)
-            val = cur[k,l].copy()
-            thres = get_threshold(k,l,cur)
-            if np.random.random() < thres and not val in strats[(i,j)]:
-                cur[i,j] = val
-        lattice = cur
 
-        snum = np.unique(cur).shape[0]
+        # book-keeping
+        snum = np.unique(lattice).size
         strat_nums.append(snum)
 
     plt.subplot(211)
     plt.imshow(lattice, interpolation='nearest')
-    plt.colorbar()
+    #plt.colorbar()
     plt.subplot(212)
     plt.plot(strat_nums)
     plt.xlabel(r'$t$')
