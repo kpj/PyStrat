@@ -18,12 +18,15 @@ def main():
     alpha = 2.5e-5
     strategy_num = 50
 
-    lattice = np.empty(shape=(tmax,N,N))
-    lattice[0] = np.random.randint(strategy_num, size=(N,N))
+    lattice = np.random.randint(strategy_num, size=(N,N))
+    strats = {}
     strat_nums = []
 
-    for t in trange(1,tmax):
-        cur = lattice[t-1].copy()
+    for index, s in np.ndenumerate(lattice):
+        strats[index] = set([s])
+
+    for t in trange(tmax):
+        cur = lattice.copy()
 
         i,j = np.random.randint(N, size=2)
         if np.random.random() < alpha:
@@ -33,15 +36,15 @@ def main():
             k,l = get_neighbor(i,j,N)
             val = cur[k,l].copy()
             thres = get_threshold(k,l,cur)
-            if np.random.random() < thres and not val in lattice[:t,i,j]:
+            if np.random.random() < thres and not val in strats[(i,j)]:
                 cur[i,j] = val
-        lattice[t] = cur.copy()
+        lattice = cur
 
         snum = np.unique(cur).shape[0]
         strat_nums.append(snum)
 
     plt.subplot(211)
-    plt.imshow(lattice[-1], interpolation='nearest')
+    plt.imshow(lattice, interpolation='nearest')
     plt.colorbar()
     plt.subplot(212)
     plt.plot(strat_nums)
