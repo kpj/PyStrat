@@ -1,4 +1,6 @@
 import numpy as np
+
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from tqdm import trange
@@ -22,6 +24,7 @@ def main():
     lattice = np.random.randint(strategy_num, size=(N,N))
     strats = {} # strategy history of each node
     strat_nums = []
+    snapshots = {}
 
     get = lambda: tuple(np.random.randint(N, size=2)) # get index of random node in system
 
@@ -47,13 +50,23 @@ def main():
         snum = np.unique(lattice).size
         strat_nums.append(snum)
 
-    plt.subplot(211)
-    plt.imshow(lattice, interpolation='nearest')
-    #plt.colorbar()
-    plt.subplot(212)
-    plt.plot(strat_nums)
-    plt.xlabel(r'$t$')
-    plt.ylabel('#strategies')
+        if t % (int(tmax/5)) == 0:
+            snapshots[t] = lattice.copy()
+
+    # plotting
+    gs = mpl.gridspec.GridSpec(2, 5)
+
+    for i, (t, lattice) in enumerate(sorted(snapshots.items())):
+        ax = plt.subplot(gs[0, i])
+        ax.imshow(lattice, interpolation='nearest')
+        ax.set_title(r'$t={}$'.format(t))
+        ax.tick_params(axis='both', which='both', labelsize=5)
+
+    ax = plt.subplot(gs[1, :])
+    ax.plot(strat_nums)
+    ax.set_xlabel(r'$t$')
+    ax.set_ylabel('#strategies')
+
     plt.savefig('result.pdf')
 
 if __name__ == '__main__':
