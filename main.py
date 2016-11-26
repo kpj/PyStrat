@@ -104,7 +104,7 @@ def plot(fname):
     ax.set_xlabel(r'$t$')
     ax.set_ylabel('#strategies')
 
-    plt.savefig('result.pdf')
+    plt.savefig('images/result.pdf')
 
 if __name__ == '__main__':
     if len(sys.argv) > 2:
