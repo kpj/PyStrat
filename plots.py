@@ -24,10 +24,13 @@ def plot_graph(data):
     graph = data['graph']
 
     plt.figure()
+    plt.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off', labelleft='off')
     pos = dict(zip(graph, graph))
-    nx.draw(
-        graph, pos,
-        node_size=60, with_labels=True, font_size=2)
+
+    nx.draw_networkx_nodes(graph, pos, node_size=20, linewidths=.2)
+    #nx.draw_networkx_labels(graph, pos, font_size=2)
+    nx.draw_networkx_edges(graph, pos, alpha=.2)
+
     plt.savefig('images/graph.pdf')
 
 def overview_plot(data):
