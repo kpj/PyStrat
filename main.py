@@ -1,5 +1,6 @@
 import sys
-import pickle
+import pickle, random
+import itertools
 
 import numpy as np
 import networkx as nx
@@ -7,21 +8,24 @@ import networkx as nx
 from tqdm import trange
 
 
-def get_neighbor(i, N):
-    x,y = i
-    r = lambda: np.random.randint(-1,2)
-    return (x+r()) % N, (y+r()) % N
+def get_neighbor(i, graph):
+    neighs = graph.neighbors(i)
+    return random.choice(neighs)
 
 def get_threshold(i, lattice):
     val = lattice[i]
     return np.sum(lattice==val) / lattice.size
 
-def takespread(sequence, num):
-    length = float(len(sequence))
-    for i in range(num):
-        yield sequence[int(np.ceil(i * length / num))]
+def generate_graph(N):
+    # generate lattice
+    grid_graph = nx.Graph()
+    for x,y in itertools.product(range(N), repeat=2):
+        for dx,dy in itertools.product(range(-1,2), repeat=2):
+            grid_graph.add_edge((x,y), ((x+dx)%N,(y+dy)%N))
 
-def simulate(resolution=40000, fname='data.dat'):
+    return grid_graph
+
+def simulate(resolution=40000, fname='results/data.dat'):
     """ Simulate Bornholdt/Sneppen model
     """
     N = 128
@@ -32,6 +36,8 @@ def simulate(resolution=40000, fname='data.dat'):
 
     lattice = np.zeros((N,N))
     strategy_num = np.unique(lattice).size
+
+    graph = generate_graph(N)
 
     strats = {} # strategy history of each node
     snapshots = []
@@ -44,7 +50,7 @@ def simulate(resolution=40000, fname='data.dat'):
     # simulate system
     for t in trange(tmax*N**2):
         i = get_random()
-        j = get_neighbor(i, N)
+        j = get_neighbor(i, graph)
 
         thres = get_threshold(j, lattice) # n_j / N^2
         if np.random.random() < thres and not lattice[j] in strats[i]:
@@ -64,6 +70,7 @@ def simulate(resolution=40000, fname='data.dat'):
     with open(fname, 'wb') as fd:
         pickle.dump({
             'snapshots': snapshots,
+            'graph': graph,
             'config': {
                 'N': N,
                 'tmax': tmax,
