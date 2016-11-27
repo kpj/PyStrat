@@ -88,11 +88,41 @@ def site_distribution(data):
     plt.loglog(binning, 'o', label=r'$\alpha={}$'.format(alpha))
     plt.loglog(sites, scale, label=r'$s^{-2.5}$')
 
+    plt.title('Sites with certain number of ideas distribution')
     plt.xlabel(r'$s$')
     plt.ylabel(r'$n$')
     plt.legend(loc='best')
 
     plt.savefig('images/site_distribution.pdf')
+
+def dominant_states(data):
+    N = data['config']['N']
+
+    # compute statistics
+    ts = []
+    strats = collections.defaultdict(list)
+    max_strat = int(np.max(data['snapshots'][-1][1]))
+    for t, lattice in tqdm(data['snapshots']):
+        bins = np.bincount(lattice.ravel().astype(np.int64))
+        #dom_strats = np.argsort(bins)[::-1]
+
+        ts.append(t / N**2)
+        for s in range(max_strat):#dom_strats:
+            freq = np.sum(lattice == s) / N**2
+            strats[s].append(freq)
+    strats = dict(strats)
+
+    # plot
+    plt.figure()
+
+    for s, vals in strats.items():
+        plt.plot(ts, vals, label=s)
+
+    plt.title('Strategy cluster sizes')
+    plt.xlabel(r'$t$')
+    plt.ylabel('relative cluster size')
+
+    plt.savefig('images/dominant_states.pdf')
 
 def main(fname):
     with open(fname, 'rb') as fd:
@@ -102,6 +132,7 @@ def main(fname):
     plot_graph(data)
     overview_plot(data)
     site_distribution(data)
+    dominant_states(data)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
