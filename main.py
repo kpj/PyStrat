@@ -16,14 +16,30 @@ def get_threshold(i, lattice):
     val = lattice[i]
     return np.sum(lattice==val) / lattice.size
 
-def generate_graph(N):
+def generate_graph(N, scale_free=True):
     # generate lattice
     grid_graph = nx.Graph()
     for x,y in itertools.product(range(N), repeat=2):
         for dx,dy in itertools.product(range(-1,2), repeat=2):
             grid_graph.add_edge((x,y), ((x+dx)%N,(y+dy)%N))
 
-    return grid_graph
+    # generate scale-free graph
+    if scale_free:
+        ba_graph = nx.barabasi_albert_graph(N**2, 1)
+    else:
+        ba_graph = np.zeros((N**2,N**2))
+
+    # combine all graphs
+    mat = np.logical_or(
+        nx.to_numpy_matrix(grid_graph),
+        nx.to_numpy_matrix(ba_graph))
+    graph = nx.from_numpy_matrix(mat)
+
+    # reset node names
+    mapping = dict(zip(graph.nodes(), grid_graph.nodes()))
+    nx.relabel_nodes(graph, mapping, copy=False)
+
+    return graph
 
 def simulate(resolution=40000, fname='results/data.dat'):
     """ Simulate Bornholdt/Sneppen model
