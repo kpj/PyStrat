@@ -1,3 +1,8 @@
+"""
+Simulate dynamics on the lattice
+"""
+
+
 import sys
 import pickle, random
 import itertools
@@ -24,13 +29,14 @@ def simulate(resolution=40000, fname='results/data.dat'):
     N = 128
     tmax = resolution*2#80000
     alpha = 25e-6
+    p = .5
 
     freq = int(tmax / resolution)
 
     lattice = np.zeros((N,N))
     strategy_num = np.unique(lattice).size
 
-    graph = generate_graph(N)
+    graph = generate_graph(N, p)
 
     strats = {} # strategy history of each node
     snapshots = []
@@ -72,11 +78,8 @@ def simulate(resolution=40000, fname='results/data.dat'):
         }, fd)
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
-        print('Usage: {} [data file]'.format(sys.argv[0]))
+    if len(sys.argv) != 2:
+        print(f'Usage: {sys.argv[0]} <output data file>')
         exit(-1)
 
-    if len(sys.argv) == 1:
-        simulate()
-    else:
-        simulate(fname=sys.argv[1])
+    simulate(fname=sys.argv[1])

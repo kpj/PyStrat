@@ -16,9 +16,12 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
-def plot_graph(graph, ax):
+def plot_graph(graph, ax=None):
     """ Plot given graph
     """
+    if ax is None:
+        ax = plt.gca()
+
     ax.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off', labelleft='off')
     pos = dict(zip(graph, graph))
 
