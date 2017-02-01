@@ -9,6 +9,7 @@ import collections
 import numpy as np
 import networkx as nx
 
+import seaborn as sns
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -86,6 +87,32 @@ def site_distribution(data):
 
     plt.savefig('images/site_distribution.pdf')
 
+def waiting_times(data):
+    """ Figure 3 of paper
+    """
+    N = data['config']['N']
+
+    # find dominant strategy at each point in time
+    get_dom_strat = lambda lat: np.argmax(np.bincount(lat.ravel().astype(np.int64)))
+    dom_strats = np.asarray(list(map(lambda e: get_dom_strat(e[1]), data['snapshots'])))
+
+    # detect dominant strategy changes (and durations)
+    indices = np.where(dom_strats[:-1] != dom_strats[1:])[0]
+
+    durations = np.r_[indices[0], np.diff(indices)[:-1]].astype(float)
+    #durations /= N**2
+
+    # plot result
+    plt.figure()
+
+    sns.distplot(durations)
+
+    plt.title('Distribution of waiting times')
+    plt.xlabel(r'$\Delta t$')
+    plt.ylabel(r'freq')
+
+    plt.savefig('images/waiting_times.pdf')
+
 def dominant_states(data):
     """ Figure 2 of paper
     """
@@ -125,6 +152,7 @@ def main(fname):
     plot_graph(data['graph'])
     overview_plot(data)
     site_distribution(data)
+    waiting_times(data)
     dominant_states(data)
 
 if __name__ == '__main__':
