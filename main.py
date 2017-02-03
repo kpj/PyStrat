@@ -72,6 +72,7 @@ def simulate(resolution=40000, fname='results/data.dat'):
             'graph': graph,
             'config': {
                 'N': N,
+                'p': p,
                 'tmax': tmax,
                 'alpha': alpha
             }

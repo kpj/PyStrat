@@ -47,7 +47,7 @@ def plot_degree_distribution(graph, ax, log=True, **kwargs):
 
 def generate_graph(N, p):
     """ Combine lattice and scale-free graph.
-        With $p$ choose entry from lattice, with $1-p$ from SF graph
+        With $1-p$ choose entry from lattice, with $p$ from SF graph
     """
 
     # generate lattice
