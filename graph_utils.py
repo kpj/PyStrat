@@ -10,10 +10,10 @@ import numpy as np
 import networkx as nx
 
 import seaborn as sns
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from tqdm import tqdm
+from tqdm import tqdm, trange
+from joblib import Parallel, delayed, cpu_count
 
 
 def plot_graph(graph, ax=None):
@@ -29,21 +29,30 @@ def plot_graph(graph, ax=None):
     #nx.draw_networkx_labels(graph, pos, ax=ax, font_size=2)
     nx.draw_networkx_edges(graph, pos, ax=ax, alpha=.2, linewidths=.2)
 
-def plot_degree_distribution(graph, ax, log=True, **kwargs):
+def plot_degree_distribution(graph_list, ax, log=True, **kwargs):
     """ Plot degree distribution of given graph
     """
-    degs = zip(range(len(graph)), nx.degree_histogram(graph))
-    degs = list(filter(lambda x: x[0]>0 and x[1]>0, degs)) # filter 0
+    assert all(len(g)==len(graph_list[0]) for g in graph_list)
 
-    ax.plot(*zip(*degs), 'o-', **kwargs)
+    # bin degrees
+    all_degrees = np.array([d for degs in map(nx.degree, graph_list) for d in degs.values()])
+
+    bins = np.logspace(0, np.log10(max(all_degrees)), num=20)
+    hist, bin_edges = np.histogram(all_degrees, bins)
+
+    # extract non-zero entries
+    nonzero_idx = np.where(hist>0)[0]
+    deg_mids = np.array([bin_edges[i] for i in range(len(bin_edges)-1)])
+
+    # plot data
+    ax.plot(deg_mids[nonzero_idx], hist[nonzero_idx], '.-', **kwargs)
 
     if log:
         ax.set_xscale('log')
         ax.set_yscale('log')
 
-    ax.set_title('Degree distribution')
-    ax.set_xlabel('degree')
-    ax.set_ylabel('count')
+    ax.set_xlabel(r'$degree$')
+    ax.set_ylabel(r'count')
 
 def generate_graph(N, p):
     """ Combine lattice and scale-free graph.
@@ -77,15 +86,18 @@ def generate_graph(N, p):
 
     return res_graph
 
-def main(N=50, fname='cache/test_graphs.pkl'):
-    p_vals = [1., .9, .8, .5, .2, 0.] #np.r_[1, 1-np.logspace(-1, 0, 4), .2]
+def main(N=50, reps=100, fname='cache/test_graphs.pkl'):
+    """ Generate degree-distribution overiew of interpolated graphs
+    """
+    p_vals = [1., .9, .8, .5, .2, 0.]
 
     # generate graphs
+    core_num = int(cpu_count() * 4/5)
     if not os.path.exists(fname):
         graph_list = []
         for p in tqdm(p_vals):
-            graph = generate_graph(N, p)
-            graph_list.append((p, graph))
+            graphs = Parallel(n_jobs=core_num)(delayed(generate_graph)(N, p) for _ in trange(reps))
+            graph_list.append((p, graphs))
         with open(fname, 'wb') as fd:
             pickle.dump(graph_list, fd)
     else:
@@ -97,9 +109,9 @@ def main(N=50, fname='cache/test_graphs.pkl'):
     plt.figure()
 
     colors = itertools.cycle([e['color'] for e in list(plt.style.library['classic']['axes.prop_cycle'])])
-    for p, graph in tqdm(graph_list):
+    for p, graphs in tqdm(graph_list):
         plot_degree_distribution(
-            graph, plt.gca(),
+            graphs, plt.gca(),
             label=rf'$p={p:.2}$', color=next(colors))
 
     plt.legend(loc='best')
