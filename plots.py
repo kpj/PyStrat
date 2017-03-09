@@ -91,7 +91,12 @@ def get_dominant_strategy(lattice, num=1):
     """ Given a lattice, return most common strategies
     """
     lattice_1d = lattice.ravel().astype(int)
-    return np.argmax(np.bincount(lattice_1d))
+    bc = np.bincount(lattice_1d)
+
+    if num == 1:
+        return np.argmax(bc)
+    else:
+        return np.argsort(bc)[::-1][:num]
 
 def get_domain_durations(series):
     """ Compute lengths of dominant strategies
