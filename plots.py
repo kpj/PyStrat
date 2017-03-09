@@ -87,20 +87,31 @@ def site_distribution(data):
 
     plt.savefig('images/site_distribution.pdf')
 
+def get_dominant_strategy(lattice, num=1):
+    """ Given a lattice, return most common strategies
+    """
+    lattice_1d = lattice.ravel().astype(int)
+    return np.argmax(np.bincount(lattice_1d))
+
+def get_domain_durations(series):
+    """ Compute lengths of dominant strategies
+    """
+    series = np.asarray(series)
+    indices = np.where(series[:-1] != series[1:])[0]
+    diff = np.diff(indices)
+    return np.r_[indices[0]+1, diff, series.size-indices[-1]-1].astype(float)
+
 def waiting_times(data):
     """ Figure 3 of paper
     """
     N = data['config']['N']
 
     # find dominant strategy at each point in time
-    get_dom_strat = lambda lat: np.argmax(np.bincount(lat.ravel().astype(np.int64)))
-    dom_strats = np.asarray(list(map(lambda e: get_dom_strat(e[1]), data['snapshots'])))
+    dom_strats = np.asarray(list(map(lambda e: get_dominant_strategy(e[1]), data['snapshots'])))
 
     # detect dominant strategy changes (and durations)
-    indices = np.where(dom_strats[:-1] != dom_strats[1:])[0]
-
-    durations = np.r_[indices[0], np.diff(indices)[:-1]].astype(float)
-    #durations /= N**2
+    durations = get_domain_durations(dom_strats)
+    durations /= N**2
 
     # plot result
     plt.figure()
