@@ -26,12 +26,12 @@ def get_threshold(i, lattice):
 def simulate(resolution=40000, fname='results/data.dat'):
     """ Simulate Bornholdt/Sneppen model
     """
-    N = 128
-    tmax = resolution*2#80000
+    N = 32 #128
+    tmax = resolution*2 #80000
     alpha = 25e-6
     p = .5
 
-    freq = int(tmax / resolution)
+    freq = int(tmax / resolution) #1/N**2
     print(f'Saving data every {freq*N**2} time steps, resulting in {int(tmax/(freq*N**2))} ({int(tmax/freq)}) data points')
 
     lattice = np.zeros((N,N))
