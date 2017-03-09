@@ -101,26 +101,42 @@ def get_domain_durations(series):
     diff = np.diff(indices)
     return np.r_[indices[0]+1, diff, series.size-indices[-1]-1].astype(float)
 
-def waiting_times(data):
+def waiting_times(all_data):
     """ Figure 3 of paper
     """
-    N = data['config']['N']
+    print('Computing waiting times')
+    result = {}
+    for data in all_data:
+        N = data['config']['N']
+        p = data['config']['p']
+        alpha = data['config']['alpha']
+        print(f'p = {p}, alpha = {alpha}')
 
-    # find dominant strategy at each point in time
-    dom_strats = np.asarray(list(map(lambda e: get_dominant_strategy(e[1]), data['snapshots'])))
+        # find dominant strategy at each point in time
+        print(' > Finding dominant strategies')
+        dom_strats = np.asarray(list(map(lambda e: get_dominant_strategy(e[1]), data['snapshots'])))
+        print(f'  >> Found {np.unique(dom_strats).size} unique strategies')
 
-    # detect dominant strategy changes (and durations)
-    durations = get_domain_durations(dom_strats)
-    durations /= N**2
+        # detect dominant strategy changes (and durations)
+        print(' > Computing durations')
+        durations = get_domain_durations(dom_strats)
+        durations /= N**2
+        print(f'  >> Found {durations.size} durations')
+
+        # store result
+        assert (p,alpha) not in result
+        result[(p,alpha)] = durations
 
     # plot result
+    print(' > Plotting')
     plt.figure()
-
-    sns.distplot(durations)
+    for (p, alpha), durations in result.items():
+        sns.distplot(durations, kde=False, label=rf'$p={p},\alpha={alpha}$')
 
     plt.title('Distribution of waiting times')
     plt.xlabel(r'$\Delta t$')
-    plt.ylabel(r'freq')
+    plt.ylabel(r'count')
+    plt.legend(loc='best')
 
     plt.savefig('images/waiting_times.pdf')
 
@@ -155,20 +171,28 @@ def dominant_states(data):
 
     plt.savefig('images/dominant_states.pdf')
 
-def main(fname):
-    with open(fname, 'rb') as fd:
-        data = pickle.load(fd)
-    print('Parsing', len(data['snapshots']), 'entries')
+def main(fnames):
+    all_data = []
+    for fname in fnames:
+        with open(fname, 'rb') as fd:
+            data = pickle.load(fd)
 
-    plot_graph(data['graph'])
-    overview_plot(data)
-    site_distribution(data)
-    waiting_times(data)
-    dominant_states(data)
+        all_data.append(data)
+        print(f'Parsing {len(data["snapshots"])} entries')
+
+        #plot_graph(data['graph'])
+        #overview_plot(data)
+        #site_distribution(data)
+        #dominant_states(data)
+
+    waiting_times(all_data)
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print(f'Usage: {sys.argv[0]} <data file>')
+    sns.set_style('white')
+    plt.style.use('seaborn-poster')
+
+    if len(sys.argv) < 2:
+        print(f'Usage: {sys.argv[0]} <data file>...')
         exit(-1)
 
-    main(sys.argv[1])
+    main(sys.argv[1:])
