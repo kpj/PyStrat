@@ -32,6 +32,7 @@ def simulate(resolution=40000, fname='results/data.dat'):
     p = .5
 
     freq = int(tmax / resolution)
+    print(f'Saving data every {freq*N**2} time steps, resulting in {int(tmax/(freq*N**2))} ({int(tmax/freq)}) data points')
 
     lattice = np.zeros((N,N))
     strategy_num = np.unique(lattice).size
