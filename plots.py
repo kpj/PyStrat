@@ -178,7 +178,7 @@ def main(fnames):
             data = pickle.load(fd)
 
         all_data.append(data)
-        print(f'Parsing {len(data["snapshots"])} entries')
+        print(f'[{fname}] Parsing {len(data["snapshots"])} entries')
 
         #plot_graph(data['graph'])
         #overview_plot(data)
