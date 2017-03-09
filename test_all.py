@@ -15,11 +15,13 @@ def test_dominant_strategies():
     assert get_dominant_strategy(lattice) == 1
     assert (get_dominant_strategy(lattice, 2) == [1, 2]).all()
     assert (get_dominant_strategy(lattice, 3) == [1, 2, 0]).all()
+    assert (get_dominant_strategy(lattice, 4) == [1, 2, 0, -1]).all()
 
     lattice = np.ones(shape=(50,50))*4
     lattice[5,5] = 5
     assert get_dominant_strategy(lattice, 1) == 4
     assert (get_dominant_strategy(lattice, 2) == [4, 5]).all()
+    assert (get_dominant_strategy(lattice, 3) == [4, 5, -1]).all()
 
 def test_domain_durations():
     series = [0, 0, 1, 2, 2, 2, 0]

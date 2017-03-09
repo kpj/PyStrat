@@ -96,7 +96,8 @@ def get_dominant_strategy(lattice, num=1):
     if num == 1:
         return np.argmax(bc)
     else:
-        return np.argsort(bc)[::-1][:num]
+        nz_len = (bc != 0).sum()
+        return np.r_[np.argsort(bc)[::-1][:min(num, nz_len)], -np.ones(max(0, num-nz_len))]
 
 def get_domain_durations(series):
     """ Compute lengths of dominant strategies
