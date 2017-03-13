@@ -2,8 +2,9 @@
 More elaborate plots based on the data
 """
 
+import os
 import sys
-import pickle
+import json
 import collections
 
 import numpy as np
@@ -23,23 +24,25 @@ def takespread(sequence, num):
     for i in range(num):
         yield sequence[int(np.ceil(i * length / num))]
 
-def overview_plot(data):
+def overview_plot(data, spread_freq=5, fname_app=''):
     """ Plot #strategies over time and system snapshots
     """
     N = data['config']['N']
 
     # compute statistics
     strat_nums = []
-    for t, lattice in data['snapshots']:
+    for t, lattice in zip(data['snapshot_times'], data['snapshots']):
         snum = np.unique(lattice).size
         strat_nums.append((t/N**2, snum))
 
-    snapshots = list(takespread(data['snapshots'], 5))
+    snapshots = list(takespread(data['snapshots'], spread_freq))
+    snapshot_times = list(takespread(data['snapshot_times'], spread_freq))
+    assert len(snapshots) == len(snapshot_times)
 
     # plotting
     gs = mpl.gridspec.GridSpec(2, len(snapshots))
 
-    for i, (t, lattice) in enumerate(sorted(snapshots)):
+    for i, (t, lattice) in enumerate(sorted(zip(snapshot_times, snapshots))):
         ax = plt.subplot(gs[0, i])
         ax.imshow(lattice, interpolation='nearest')
         ax.set_title(rf'$t={int(t/N**2):d}$', fontsize=10)
@@ -50,9 +53,9 @@ def overview_plot(data):
     ax.set_xlabel(r'$t$')
     ax.set_ylabel('#strategies')
 
-    plt.savefig('images/result.pdf')
+    plt.savefig(f'images/result{fname_app}.pdf')
 
-def site_distribution(data):
+def site_distribution(data, fname_app=''):
     """ Figure 4 of paper
     """
     N = data['config']['N']
@@ -60,7 +63,7 @@ def site_distribution(data):
 
     # aggregate data
     counts = collections.defaultdict(set)
-    for t, lattice in tqdm(data['snapshots']):
+    for lattice in tqdm(data['snapshots']):
         for strat in range(int(np.max(lattice))+1):
             raw = np.where(lattice==strat)
             res = set([idx for idx in zip(*raw)])
@@ -85,12 +88,12 @@ def site_distribution(data):
     plt.ylabel(r'$n$')
     plt.legend(loc='best')
 
-    plt.savefig('images/site_distribution.pdf')
+    plt.savefig(f'images/site_distribution{fname_app}.pdf')
 
 def get_dominant_strategy(lattice, num=1):
     """ Given a lattice, return most common strategies
     """
-    lattice_1d = lattice.ravel().astype(int)
+    lattice_1d = np.asarray(lattice).ravel().astype(int)
     bc = np.bincount(lattice_1d)
 
     if num == 1:
@@ -120,7 +123,7 @@ def waiting_times(all_data):
 
         # find dominant strategy at each point in time
         print(' > Finding dominant strategies')
-        dom_strats = np.asarray(list(map(lambda e: get_dominant_strategy(e[1]), data['snapshots'])))
+        dom_strats = np.asarray(list(map(lambda e: get_dominant_strategy(e), data['snapshots'])))
         print(f'  >> Found {np.unique(dom_strats).size} unique strategies')
 
         # detect dominant strategy changes (and durations)
@@ -146,7 +149,7 @@ def waiting_times(all_data):
 
     plt.savefig('images/waiting_times.pdf')
 
-def dominant_states(data):
+def dominant_states(data, fname_app=''):
     """ Figure 2 of paper
     """
     N = data['config']['N']
@@ -154,8 +157,8 @@ def dominant_states(data):
     # compute statistics
     ts = []
     strats = collections.defaultdict(list)
-    max_strat = int(np.max(data['snapshots'][-1][1]))
-    for t, lattice in tqdm(data['snapshots']):
+    max_strat = int(np.max(data['snapshots'][-1]))
+    for t, lattice in tqdm(zip(data['snapshot_times'], data['snapshots'])):
         bins = np.bincount(lattice.ravel().astype(np.int64))
         #dom_strats = np.argsort(bins)[::-1]
 
@@ -175,21 +178,23 @@ def dominant_states(data):
     plt.xlabel(r'$t$')
     plt.ylabel('relative cluster size')
 
-    plt.savefig('images/dominant_states.pdf')
+    plt.savefig(f'images/dominant_states{fname_app}.pdf')
 
 def main(fnames):
     all_data = []
     for fname in fnames:
         with open(fname, 'rb') as fd:
-            data = pickle.load(fd)
+            data = json.load(fd)
+            data['snapshots'] = [np.reshape(s, (data['config']['N'], data['config']['N'])) for s in data['snapshots']]
 
         all_data.append(data)
         print(f'[{fname}] Parsing {len(data["snapshots"])} entries')
 
+        f_app = os.path.basename(fname)
         #plot_graph(data['graph'])
-        #overview_plot(data)
-        #site_distribution(data)
-        #dominant_states(data)
+        overview_plot(data, fname_app=f'_{f_app}')
+        #site_distribution(data, fname_app=f'_{f_app}')
+        #dominant_states(data, fname_app=f'_{f_app}')
 
     waiting_times(all_data)
 
