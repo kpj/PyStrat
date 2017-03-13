@@ -8,6 +8,7 @@ import json, time
 import itertools
 
 import networkx as nx
+from joblib import Parallel, delayed, cpu_count
 
 from graph_utils import generate_graph
 from simulation.libsim import Simulator
@@ -20,6 +21,7 @@ def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     tmax = resolution*2 #80000
 
     freq = int(tmax / resolution) #1/N**2
+    print(f'Simulating with p={p}, alpha={alpha} ({fname})')
     print(f'Saving data every {freq*N**2} time steps, resulting in {int(tmax/(freq*N**2))} ({int(tmax/freq)}) data points')
 
     graph_mat = nx.to_numpy_matrix(generate_graph(N, p))
@@ -40,7 +42,9 @@ if __name__ == '__main__':
     p_vals = [0, .5, 1]
     alpha_vals = [4e-4, 2.5e-6, 1e-7]
 
-    for p, alpha in itertools.product(p_vals, alpha_vals):
-        fname = sys.argv[1].format(p=p, alpha=alpha)
-        print(f'Simulating with p={p}, alpha={alpha} ({fname})')
-        simulate(p=p, alpha=alpha, fname=fname)
+    core_num = int(4/5 * cpu_count())
+    Parallel(n_jobs=core_num)(
+        delayed(simulate)(
+            p=p, alpha=alpha,
+            fname=sys.argv[1].format(p=p, alpha=alpha)
+        ) for p, alpha in itertools.product(p_vals, alpha_vals))
