@@ -4,6 +4,7 @@ Various tests
 
 import numpy as np
 
+from main import convert_matrix
 from plots import get_dominant_strategy, get_domain_durations
 
 
@@ -31,3 +32,13 @@ def test_domain_durations():
     series = np.r_[np.ones(20), np.zeros(13), np.ones(42)*5]
     durations = get_domain_durations(series)
     assert (durations == [20, 13, 42]).all()
+
+def test_matrix_conversion():
+    mat = np.array([
+        [1,0,1],
+        [0,1,0],
+        [0,0,0],
+        [1,1,1]
+    ])
+    result = convert_matrix(mat)
+    assert result == [[0,2], [1], [], [0,1,2]]

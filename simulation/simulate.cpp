@@ -45,7 +45,7 @@ private:
     int N, t_max, freq;
     double p, alpha;
     char* fname;
-    py::list graphMatrix;
+    std::vector<std::vector<int>> graphMatrix;
 };
 
 Simulator::Simulator(
@@ -59,7 +59,16 @@ Simulator::Simulator(
     this->t_max = t_max;
     this->freq = freq;
     this->fname = fname;
-    this->graphMatrix = graphMatrix;
+
+    for (int nodeIdx = 0; nodeIdx < py::len(graphMatrix); ++nodeIdx) {
+        py::list row = py::extract<py::list>(graphMatrix[nodeIdx]);
+        this->graphMatrix.push_back(std::vector<int>());
+
+        for (int j = 0; j < py::len(row); ++j) {
+            int neighIdx = py::extract<int>(row[j]);
+            this->graphMatrix[nodeIdx].push_back(neighIdx);
+        }
+    }
 }
 
 int Simulator::transformIndex(int x, int y) {
@@ -71,10 +80,14 @@ int Simulator::getRandomInt(int min, int max) {
 }
 
 std::pair<int, int> Simulator::getNeighbour(int x, int y) {
-    // TODO: use graph
-    int n_rand_x = x + getRandomInt(-1, 1);
-    int n_rand_y = y + getRandomInt(-1, 1);
-    return std::make_pair(n_rand_x, n_rand_y);
+    int nodeIdx = transformIndex(x, y);
+
+    int neighIdx = graphMatrix[nodeIdx][getRandomInt(0, graphMatrix[nodeIdx].size()-1)];
+
+    int n_x = neighIdx / N;
+    int n_y = neighIdx % N;
+
+    return std::make_pair(n_x, n_y);
 }
 
 int Simulator::run() {

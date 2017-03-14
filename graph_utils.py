@@ -58,7 +58,6 @@ def generate_graph(N, p):
     """ Combine lattice and scale-free graph.
         With $1-p$ choose entry from lattice, with $p$ from SF graph
     """
-
     # generate lattice
     grid_graph = nx.Graph()
     for x,y in itertools.product(range(N), repeat=2):

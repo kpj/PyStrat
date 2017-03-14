@@ -7,12 +7,23 @@ import sys
 import json, time
 import itertools
 
+import numpy as np
 import networkx as nx
+
 from joblib import Parallel, delayed, cpu_count
 
 from graph_utils import generate_graph
 from simulation.libsim import Simulator
 
+
+def convert_matrix(matrix_graph):
+    """ Convert adjacency matrix to data structure usable in C++
+    """
+    source, target = np.where(matrix_graph==1)
+    graph_repr = [[] for _ in range(matrix_graph.shape[0])]
+    for i, j in zip(source, target):
+        graph_repr[i].append(int(j))
+    return graph_repr
 
 def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     """ Simulate Bornholdt/Sneppen model
@@ -24,8 +35,11 @@ def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     print(f'Simulating with p={p}, alpha={alpha} ({fname})')
     print(f'Saving data every {freq*N**2} time steps, resulting in {int(tmax/(freq*N**2))} ({int(tmax/freq)}) data points')
 
-    graph_mat = nx.to_numpy_matrix(generate_graph(N, p))
-    sim = Simulator(N, p, alpha, tmax, freq, fname, graph_mat.tolist())
+    node_list = [(i//N, i%N) for i in range(N**2)]
+    graph_mat = nx.to_numpy_matrix(generate_graph(N, p), nodelist=node_list)
+    graph_repr = convert_matrix(graph_mat)
+
+    sim = Simulator(N, p, alpha, tmax, freq, fname, graph_repr)
 
     start = time.time()
     snapshot_num = sim.run()
