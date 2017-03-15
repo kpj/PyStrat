@@ -183,7 +183,7 @@ def dominant_states(data, fname_app=''):
 def main(fnames):
     all_data = []
     for fname in fnames:
-        with open(fname, 'rb') as fd:
+        with open(fname, 'r') as fd:
             data = json.load(fd)
             data['snapshots'] = [np.reshape(s, (data['config']['N'], data['config']['N'])) for s in data['snapshots']]
 
