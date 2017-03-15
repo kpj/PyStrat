@@ -8,6 +8,7 @@ import json
 import collections
 
 import numpy as np
+import pandas as pd
 import networkx as nx
 
 import seaborn as sns
@@ -111,10 +112,10 @@ def get_domain_durations(series):
     return np.r_[indices[0]+1, diff, series.size-indices[-1]-1].astype(float)
 
 def waiting_times(all_data):
-    """ Figure 3 of paper
+    """ Figure 3 of paper and more
     """
     print('Computing waiting times')
-    result = {}
+    result = {'p': [], 'alpha': [], 'durations': []}
     for data in all_data:
         N = data['config']['N']
         p = data['config']['p']
@@ -133,14 +134,19 @@ def waiting_times(all_data):
         print(f'  >> Found {durations.size} durations')
 
         # store result
-        assert (p,alpha) not in result
-        result[(p,alpha)] = durations
+        result['p'].extend([p]*len(durations))
+        result['alpha'].extend([alpha]*len(durations))
+        result['durations'].extend(durations)
 
-    # plot result
+    df = pd.DataFrame(result)
+
+    # plot w-time distributions
     print(' > Plotting')
     plt.figure()
-    for (p, alpha), durations in result.items():
-        sns.distplot(durations, kde=False, label=rf'$p={p},\alpha={alpha}$')
+    for (p, alpha), group in df.groupby(['p', 'alpha']):
+        sns.distplot(
+            group['durations'],
+            kde=False, label=rf'$p={p},\alpha={alpha}$')
 
     plt.title('Distribution of waiting times')
     plt.xlabel(r'$\Delta t$')
@@ -148,6 +154,11 @@ def waiting_times(all_data):
     plt.legend(loc='best')
 
     plt.savefig('images/waiting_times.pdf')
+
+    ## plot wtd dependence on parameters
+    plt.figure()
+    sns.boxplot(x='alpha', y='durations', hue='p', data=df)
+    plt.savefig('images/waiting_times_vs_alpha.pdf')
 
 def dominant_states(data, fname_app=''):
     """ Figure 2 of paper
