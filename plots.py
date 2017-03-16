@@ -169,7 +169,7 @@ def dominant_states(data, fname_app=''):
     ts = []
     strats = collections.defaultdict(list)
     max_strat = int(np.max(data['snapshots'][-1]))
-    for t, lattice in tqdm(zip(data['snapshot_times'], data['snapshots'])):
+    for t, lattice in tqdm(zip(data['snapshot_times'], data['snapshots']), total=len(data['snapshot_times'])):
         bins = np.bincount(lattice.ravel().astype(np.int64))
         #dom_strats = np.argsort(bins)[::-1]
 
@@ -204,8 +204,8 @@ def main(fnames):
         f_app = os.path.basename(fname)
         #plot_graph(data['graph'])
         overview_plot(data, fname_app=f'_{f_app}')
-        #site_distribution(data, fname_app=f'_{f_app}')
-        #dominant_states(data, fname_app=f'_{f_app}')
+        site_distribution(data, fname_app=f'_{f_app}')
+        dominant_states(data, fname_app=f'_{f_app}')
 
     waiting_times(all_data)
 
