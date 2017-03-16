@@ -70,7 +70,7 @@ def site_distribution(data, fname_app=''):
     # aggregate data
     counts = collections.defaultdict(set)
     for lattice in tqdm(data['snapshots']):
-        for strat in range(int(np.max(lattice))+1):
+        for strat in np.unique(lattice):
             raw = np.where(lattice==strat)
             res = set([idx for idx in zip(*raw)])
             counts[strat].update(res) #= counts[strat].union(res)
@@ -180,8 +180,11 @@ def dominant_states(data, fname_app=''):
 
         ts.append(t / N**2)
         for s in range(max_strat):#dom_strats:
-            freq = np.sum(lattice == s) / N**2
-            strats[s].append(freq)
+            if s in lattice:
+                freq = np.sum(lattice == s) / N**2
+                strats[s].append(freq)
+            else:
+                strats[s].append(0)
     strats = dict(strats)
 
     # plot
