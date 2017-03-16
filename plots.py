@@ -172,26 +172,16 @@ def dominant_states(data, fname_app=''):
 
     # compute statistics
     ts = []
-    strats = collections.defaultdict(list)
-    max_strat = int(np.max(data['snapshots'][-1]))
+    dom_strats = []
     for t, lattice in tqdm(zip(data['snapshot_times'], data['snapshots']), total=len(data['snapshot_times'])):
-        bins = np.bincount(lattice.ravel().astype(np.int64))
-        #dom_strats = np.argsort(bins)[::-1]
-
+        bins = np.bincount(lattice.ravel().astype(int))
         ts.append(t / N**2)
-        for s in range(max_strat):#dom_strats:
-            if s in lattice:
-                freq = np.sum(lattice == s) / N**2
-                strats[s].append(freq)
-            else:
-                strats[s].append(0)
-    strats = dict(strats)
+        dom_strats.append(np.max(bins) / N**2)
 
     # plot
     plt.figure()
 
-    for s, vals in strats.items():
-        plt.plot(ts, vals, label=s)
+    plt.plot(ts, dom_strats)
 
     plt.title('Strategy cluster sizes')
     plt.xlabel(r'$t$')
