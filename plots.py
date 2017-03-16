@@ -147,18 +147,21 @@ def waiting_times(all_data):
 
     # plot w-time distributions
     print(' > Plotting')
-    plt.figure()
-    for (p, alpha), group in df.groupby(['p', 'alpha']):
-        sns.distplot(
-            group['durations'],
-            kde=False, label=rf'$p={p},\alpha={alpha}$')
+    for p in df['p'].unique():
+        sub = df[df['p']==p]
 
-    plt.title('Distribution of waiting times')
-    plt.xlabel(r'$\Delta t$')
-    plt.ylabel(r'count')
-    plt.legend(loc='best')
+        plt.figure()
+        for alpha, group in sub.groupby(['alpha']):
+            sns.distplot(
+                group['durations'],
+                kde=False, label=rf'$\alpha={alpha}$')
 
-    plt.savefig('images/waiting_times.pdf')
+        plt.title(rf'Distribution of waiting times ($p={p}$)')
+        plt.xlabel(r'$\Delta t$')
+        plt.ylabel(r'count')
+        plt.legend(loc='best')
+
+        plt.savefig(f'images/waiting_times_p{p}.pdf')
 
     ## plot wtd dependence on parameters
     plt.figure()
