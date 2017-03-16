@@ -45,9 +45,14 @@ def overview_plot(data, spread_freq=5, fname_app=''):
 
     for i, (t, lattice) in enumerate(sorted(zip(snapshot_times, snapshots))):
         ax = plt.subplot(gs[0, i])
-        ax.imshow(lattice, interpolation='nearest')
-        ax.set_title(rf'$t={int(t/N**2):d}$', fontsize=10)
-        ax.tick_params(axis='both', which='both', labelsize=5)
+        ax.imshow(
+            lattice, interpolation='nearest',
+            cmap=mpl.colors.ListedColormap(sns.color_palette('husl')))
+        ax.set_title(rf'$t={int(t/N**2):d}$')
+        ax.tick_params(
+            axis='both', which='both',
+            bottom='off', top='off', right='off', left='off',
+            labelbottom='off', labelleft='off')
 
     ax = plt.subplot(gs[1, :])
     ax.plot(*zip(*strat_nums))
