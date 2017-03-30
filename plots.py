@@ -207,7 +207,7 @@ def main(fnames):
         print(f'[{fname}] Parsing {len(data["snapshots"])} entries')
 
         f_app = os.path.basename(fname)
-        #plot_graph(data['graph'])
+        plot_graph(data['graph'], fname_app=f'_{f_app}')
         overview_plot(data, fname_app=f'_{f_app}')
         site_distribution(data, fname_app=f'_{f_app}')
         dominant_states(data, fname_app=f'_{f_app}')

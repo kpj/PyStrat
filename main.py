@@ -9,6 +9,7 @@ import itertools
 
 import numpy as np
 import networkx as nx
+from networkx.readwrite import json_graph
 
 from joblib import Parallel, delayed, cpu_count
 
@@ -36,7 +37,9 @@ def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     print(f'Saving data every {freq*N**2} time steps, resulting in {int(tmax/(freq*N**2))} ({int(tmax/freq)}) data points')
 
     node_list = [(i//N, i%N) for i in range(N**2)]
-    graph_mat = nx.to_numpy_matrix(generate_graph(N, p), nodelist=node_list)
+    graph = generate_graph(N, p)
+
+    graph_mat = nx.to_numpy_matrix(graph, nodelist=node_list)
     graph_repr = convert_matrix(graph_mat)
 
     sim = Simulator(N, p, alpha, tmax, freq, fname, graph_repr)
@@ -47,6 +50,13 @@ def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     assert snapshot_num == int(tmax/freq), snapshot_num
 
     print(f' > Runtime: {end-start:.0f}s')
+
+    # save graph
+    with open(fname) as fd:
+        data = json.load(fd)
+    data['graph'] = json_graph.adjacency_data(graph)
+    with open(fname, 'w') as fd:
+        json.dump(data, fd)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

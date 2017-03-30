@@ -8,6 +8,7 @@ import itertools
 
 import numpy as np
 import networkx as nx
+from networkx.readwrite import json_graph
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -16,11 +17,31 @@ from tqdm import tqdm, trange
 from joblib import Parallel, delayed, cpu_count
 
 
-def plot_graph(graph, ax=None):
+def graph_from_json(json_dict):
+    """ Get networkx graph from json string
+    """
+    # convert nodes from list to tuple (make hashable)
+    for e in json_dict['nodes']:
+        if isinstance(e['id'], list):
+            e['id'] = tuple(e['id'])
+    for row in json_dict['adjacency']:
+        for e in row:
+            if isinstance(e['id'], list):
+                e['id'] = tuple(e['id'])
+
+    graph = json_graph.adjacency_graph(json_dict)
+    return graph
+
+def plot_graph(graph, ax_orig=None, fname_app=''):
     """ Plot given graph
     """
-    if ax is None:
+    if ax_orig is None:
         ax = plt.gca()
+    else:
+        ax = ax_orig
+
+    if isinstance(graph, dict):
+        graph = graph_from_json(graph)
 
     ax.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off', labelleft='off')
     pos = dict(zip(graph, graph))
@@ -28,6 +49,10 @@ def plot_graph(graph, ax=None):
     nx.draw_networkx_nodes(graph, pos, ax=ax, node_size=2, linewidths=.2)
     #nx.draw_networkx_labels(graph, pos, ax=ax, font_size=2)
     nx.draw_networkx_edges(graph, pos, ax=ax, alpha=.2, linewidths=.2)
+
+    if ax_orig is None:
+        plt.tight_layout()
+        plt.savefig(f'images/graph{fname_app}.pdf')
 
 def plot_degree_distribution(graph_list, ax, log=True, **kwargs):
     """ Plot degree distribution of given graph

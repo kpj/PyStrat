@@ -92,7 +92,7 @@ std::pair<int, int> Simulator::getNeighbour(int x, int y) {
 
 int Simulator::run() {
     std::cout
-        << "N:" << N << std::endl
+        << "N: " << N << std::endl
         << "alpha: " << alpha << std::endl
         << "t_max: " << t_max << std::endl
         << "fname: " << fname << std::endl
