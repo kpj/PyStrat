@@ -77,8 +77,13 @@ def site_distribution(data, fname_app=''):
     counts = dict(counts)
 
     sites = []
+    df_tmp = {'strategy': [], 'coordinate': []}
     for strat, coords in counts.items():
         sites.append(len(coords))
+
+        for co in coords:
+            df_tmp['strategy'].append(strat)
+            df_tmp['coordinate'].append(co)
 
     binning = np.bincount(sites)
     scale = np.array(sites)**-2.5
@@ -95,6 +100,8 @@ def site_distribution(data, fname_app=''):
     plt.legend(loc='best')
 
     plt.savefig(f'images/site_distribution{fname_app}.pdf')
+
+    return pd.DataFrame(df_tmp)
 
 def get_dominant_strategy(lattice, num=1):
     """ Given a lattice, return most common strategies
@@ -172,6 +179,8 @@ def waiting_times(all_data):
     sns.boxplot(x='alpha', y='durations', hue='p', data=df)
     plt.savefig('images/waiting_times_vs_alpha.pdf')
 
+    return df
+
 def dominant_states(data, fname_app=''):
     """ Figure 2 of paper
     """
@@ -196,6 +205,8 @@ def dominant_states(data, fname_app=''):
 
     plt.savefig(f'images/dominant_states{fname_app}.pdf')
 
+    return pd.DataFrame({'time': ts, 'dominant strategy count': dom_strats})
+
 def main(fnames):
     all_data = []
     for fname in fnames:
@@ -206,13 +217,20 @@ def main(fnames):
         all_data.append(data)
         print(f'[{fname}] Parsing {len(data["snapshots"])} entries')
 
+        # compute and plot results
         f_app = os.path.basename(fname)
         plot_graph(data['graph'], fname_app=f'_{f_app}')
         overview_plot(data, fname_app=f'_{f_app}')
-        site_distribution(data, fname_app=f'_{f_app}')
-        dominant_states(data, fname_app=f'_{f_app}')
 
-    waiting_times(all_data)
+        df_sd = site_distribution(data, fname_app=f'_{f_app}')
+        df_ds = dominant_states(data, fname_app=f'_{f_app}')
+
+        # cache data
+        df_sd.to_csv(f'cache/site_distribution_{f_app}.csv')
+        df_ds.to_csv(f'cache/dominant_states_{f_app}.csv')
+
+    df_wt = waiting_times(all_data)
+    df_wt.to_csv(f'cache/waiting_times_{f_app}.csv')
 
 if __name__ == '__main__':
     sns.set_style('white')
