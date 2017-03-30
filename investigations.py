@@ -40,7 +40,8 @@ def fit_slope(data, fname=None):
     """ Fit loglog slope to given data
     """
     def reject_outliers(data, m=2):
-        return data[abs(data - np.mean(data)) < m * np.std(data)]
+        #return data[abs(data - np.mean(data)) < m * np.std(data)]
+        return data[data<1e3]
 
     # create histogram
     binning = np.bincount(data)
