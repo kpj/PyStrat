@@ -132,6 +132,10 @@ def waiting_times(all_data):
         dom_strats = np.asarray(list(map(lambda e: get_dominant_strategy(e), data['snapshots'])))
         print(f'  >> Found {np.unique(dom_strats).size} unique strategies')
 
+        if np.unique(dom_strats).size <= 1:
+            print(' >> Skipping')
+            continue
+
         # detect dominant strategy changes (and durations)
         print(' > Computing durations')
         durations = get_domain_durations(dom_strats)
