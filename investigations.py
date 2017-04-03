@@ -60,7 +60,7 @@ def fit_slope(data, fname=None):
     hist_bin /= np.diff(bin_edges)
 
     hist_bin_x = np.where(hist_bin>0)[0]
-    deg_mids = np.array([bin_edges[i] for i in range(len(bin_edges)-1)])
+    deg_mids = np.array([(bin_edges[i]+bin_edges[i+1])/2 for i in range(len(bin_edges)-1)])
 
     # linear fit to loglog data
     fit = np.polyfit(np.log10(deg_mids[hist_bin_x]), np.log10(hist_bin[hist_bin_x]), 1)
