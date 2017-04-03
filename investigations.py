@@ -41,53 +41,54 @@ def fit_slope(data, fname=None):
     """ Fit loglog slope to given data
     """
     def reject_outliers(data, m=2):
+        """ Throw away "special entries"
+        """
         #return data[abs(data - np.mean(data)) < m * np.std(data)]
         return data[data<1e3]
 
     # histogram without binning
-    binning = np.bincount(data)
-    nonzero_xvals = np.where(binning>0)[0]
-    nonzero_xvals = reject_outliers(nonzero_xvals) # throw away "special entries"
-    nonzero_binning = binning[nonzero_xvals]
+    hist_nobin = np.bincount(data)
+    hist_nobin_x = np.where(hist_nobin>0)[0]
+    hist_nobin_x_fitdata = reject_outliers(hist_nobin_x)
 
     # histogram with binning
     data = reject_outliers(np.asarray(data))
     bins = np.logspace(0, np.log10(max(data)), num=20)
-    hist, bin_edges = np.histogram(data, bins)
-    hist = hist.astype(float)
-    hist /= np.diff(bin_edges)
-    nonzero_idx = np.where(hist>0)[0]
+
+    hist_bin, bin_edges = np.histogram(data, bins)
+    hist_bin = hist_bin.astype(float)
+    hist_bin /= np.diff(bin_edges)
+
+    hist_bin_x = np.where(hist_bin>0)[0]
     deg_mids = np.array([bin_edges[i] for i in range(len(bin_edges)-1)])
 
     # linear fit to loglog data
-    #fit = np.polyfit(np.log10(nonzero_xvals), np.log10(nonzero_binning), 1)
-    fit = np.polyfit(np.log10(deg_mids[nonzero_idx]), np.log10(hist[nonzero_idx]), 1)
+    fit = np.polyfit(np.log10(deg_mids[hist_bin_x]), np.log10(hist_bin[hist_bin_x]), 1)
 
     if fname is not None:
         pol_obj = np.poly1d(fit)
-        x_vals = np.arange(1, binning.shape[0]+1)
 
         sns.plt.figure()
 
         sns.plt.plot(
-            np.where(binning>0)[0],
-            binning[binning>0],
+            hist_nobin_x,
+            hist_nobin[hist_nobin_x],
             'o', zorder=-1, label='site dist')
         sns.plt.plot(
-            x_vals,
-            np.array(x_vals)**-2.5,
+            hist_nobin_x,
+            np.array(hist_nobin_x)**-2.5,
             label=r'$s^{-2.5}$')
         sns.plt.plot(
-            nonzero_xvals,
-            10**pol_obj(np.log10(nonzero_xvals)),
+            deg_mids[hist_bin_x],
+            10**pol_obj(np.log10(deg_mids[hist_bin_x])),
             zorder=-2, label='fit')
         sns.plt.plot(
-            deg_mids[nonzero_idx],
-            hist[nonzero_idx],
+            deg_mids[hist_bin_x],
+            hist_bin[hist_bin_x],
             '.-', zorder=2, label='binned data')
         sns.plt.scatter(
-            nonzero_xvals,
-            nonzero_binning,
+            hist_nobin_x_fitdata,
+            hist_nobin[hist_nobin_x_fitdata],
             marker='*', color='yellow', s=10,
             zorder=1, label='considered for binning')
 
@@ -97,7 +98,6 @@ def fit_slope(data, fname=None):
         sns.plt.title(rf'Slope: ${fit[0]:.3}$')
         sns.plt.legend(loc='best')
 
-        #sns.plt.show()
         sns.plt.savefig(fname)
         sns.plt.close()
 
