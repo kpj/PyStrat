@@ -53,6 +53,8 @@ def fit_slope(data, fname=None):
     data = reject_outliers(np.asarray(data))
     bins = np.logspace(0, np.log10(max(data)), num=20)
     hist, bin_edges = np.histogram(data, bins)
+    hist = hist.astype(float)
+    hist /= np.diff(bin_edges)
     nonzero_idx = np.where(hist>0)[0]
     deg_mids = np.array([bin_edges[i] for i in range(len(bin_edges)-1)])
 
