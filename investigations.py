@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 import seaborn as sns
+from tqdm import tqdm
 
 
 def read_data(prefix):
@@ -110,7 +111,7 @@ def site_distribution_slope():
 
     # compute slopes
     result = {'p': [], 'alpha': [], 'slope': []}
-    for e in data:
+    for e in tqdm(data):
         cur = e['df']
 
         count_dist = cur.groupby('strategy').count()['coordinate'].tolist()
