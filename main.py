@@ -29,7 +29,7 @@ def convert_matrix(matrix_graph):
 def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     """ Simulate Bornholdt/Sneppen model
     """
-    N = 32 #128
+    N = 128
     tmax = resolution*2 #80000
 
     freq = int(tmax / resolution) #1/N**2
