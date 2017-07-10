@@ -2,7 +2,7 @@
 Simulate dynamics on the lattice
 """
 
-
+import os
 import sys
 import json, time
 import itertools
@@ -29,6 +29,10 @@ def convert_matrix(matrix_graph):
 def simulate(p=0, alpha=25e-6, resolution=40000, fname='results/data.json'):
     """ Simulate Bornholdt/Sneppen model
     """
+    if os.path.exists(fname):
+        print(f'File {fname} exists, skipping')
+        return
+
     N = 128
     tmax = resolution*2 #80000
 
