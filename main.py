@@ -67,12 +67,21 @@ if __name__ == '__main__':
         print(f'Usage: {sys.argv[0]} <output data file (data{{p}}{{alpha}})>')
         exit(-1)
 
+    # declare values of interest
+    pre_fname = sys.argv[1]
     p_vals = np.linspace(0, 1, 10) #[0, .5, 1]
     alpha_vals = np.linspace(0.0004, 1e-07, 10) #[4e-4, 2.5e-6, 1e-7]
 
+    # safety checks
+    fname_list = [pre_fname.format(p=p, alpha=alpha)
+                  for p, alpha in itertools.product(p_vals, alpha_vals)]
+    assert len(fname_list) == len(set(fname_list)), \
+        f'Filename collision ({fname_list})'
+
+    # run simulation
     core_num = int(4/5 * cpu_count())
     Parallel(n_jobs=core_num)(
         delayed(simulate)(
             p=p, alpha=alpha,
-            fname=sys.argv[1].format(p=p, alpha=alpha)
+            fname=pre_fname.format(p=p, alpha=alpha)
         ) for p, alpha in itertools.product(p_vals, alpha_vals))
