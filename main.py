@@ -67,8 +67,8 @@ if __name__ == '__main__':
         print(f'Usage: {sys.argv[0]} <output data file (data{{p}}{{alpha}})>')
         exit(-1)
 
-    p_vals = [0, .5, 1]
-    alpha_vals = [4e-4, 2.5e-6, 1e-7]
+    p_vals = np.linspace(0, 1, 10) #[0, .5, 1]
+    alpha_vals = np.linspace(0.0004, 1e-07, 10) #[4e-4, 2.5e-6, 1e-7]
 
     core_num = int(4/5 * cpu_count())
     Parallel(n_jobs=core_num)(
