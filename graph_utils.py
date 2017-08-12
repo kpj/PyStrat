@@ -53,6 +53,7 @@ def plot_graph(graph, ax_orig=None, fname_app=''):
     if ax_orig is None:
         plt.tight_layout()
         plt.savefig(f'images/graph{fname_app}.pdf')
+        plt.close()
 
 def plot_degree_distribution(graph_list, ax, log=True, **kwargs):
     """ Plot degree distribution of given graph

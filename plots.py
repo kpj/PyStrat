@@ -60,6 +60,7 @@ def overview_plot(data, spread_freq=5, fname_app=''):
     ax.set_ylabel('#strategies')
 
     plt.savefig(f'images/result{fname_app}.pdf')
+    plt.close()
 
 def site_distribution(data, fname_app=''):
     """ Figure 4 of paper
@@ -100,6 +101,7 @@ def site_distribution(data, fname_app=''):
     plt.legend(loc='best')
 
     plt.savefig(f'images/site_distribution{fname_app}.pdf')
+    plt.close()
 
     return pd.DataFrame(df_tmp)
 
@@ -178,6 +180,7 @@ def waiting_times(all_data):
     plt.figure()
     sns.boxplot(x='alpha', y='durations', hue='p', data=df)
     plt.savefig('images/waiting_times_vs_alpha.pdf')
+    plt.close()
 
     return df
 
@@ -204,6 +207,7 @@ def dominant_states(data, fname_app=''):
     plt.ylabel('relative cluster size')
 
     plt.savefig(f'images/dominant_states{fname_app}.pdf')
+    plt.close()
 
     return pd.DataFrame({'time': ts, 'dominant strategy count': dom_strats})
 
