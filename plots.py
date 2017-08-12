@@ -217,20 +217,32 @@ def main(fnames):
         all_data.append(data)
         print(f'[{fname}] Parsing {len(data["snapshots"])} entries')
 
-        # compute and plot results
         f_app = os.path.basename(fname)
+        sd_fname = f'cache/site_distribution_{f_app}.csv'
+        ds_fname = f'cache/dominant_states_{f_app}.csv'
+
+        # compute and plot results
         plot_graph(data['graph'], fname_app=f'_{f_app}')
         overview_plot(data, fname_app=f'_{f_app}')
 
-        df_sd = site_distribution(data, fname_app=f'_{f_app}')
-        df_ds = dominant_states(data, fname_app=f'_{f_app}')
+        if not os.path.exists(sd_fname):
+            df_sd = site_distribution(data, fname_app=f'_{f_app}')
+            df_sd.to_csv(sd_fname)
+        else:
+            print('Cached', sd_fname)
 
-        # cache data
-        df_sd.to_csv(f'cache/site_distribution_{f_app}.csv')
-        df_ds.to_csv(f'cache/dominant_states_{f_app}.csv')
+        if not os.path.exists(ds_fname):
+            df_ds = dominant_states(data, fname_app=f'_{f_app}')
+            df_ds.to_csv(ds_fname)
+        else:
+            print('Cached', ds_fname)
 
-    df_wt = waiting_times(all_data)
-    df_wt.to_csv(f'cache/waiting_times_{f_app}.csv')
+    wt_fname = f'cache/waiting_times_{f_app}.csv'
+    if not os.path.exists(wt_fname):
+        df_wt = waiting_times(all_data)
+        df_wt.to_csv(wt_fname)
+    else:
+        print('Cached', wt_fname)
 
 if __name__ == '__main__':
     sns.set_style('white')
