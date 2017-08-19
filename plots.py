@@ -215,7 +215,12 @@ def main(fnames):
     all_data = []
     for fname in fnames:
         with open(fname, 'r') as fd:
-            data = json.load(fd)
+            try:
+                data = json.load(fd)
+            except json.decoder.JSONDecodeError:
+                print(f'Invalid JSON-file: "{fname}"')
+                continue
+
             data['snapshots'] = [np.reshape(s, (data['config']['N'], data['config']['N'])) for s in data['snapshots']]
 
         all_data.append(data)
@@ -226,7 +231,11 @@ def main(fnames):
         ds_fname = f'cache/dominant_states_{f_app}.csv'
 
         # compute and plot results
-        plot_graph(data['graph'], fname_app=f'_{f_app}')
+        if 'graph' in data:
+            plot_graph(data['graph'], fname_app=f'_{f_app}')
+        else:
+            print(' > No graph-data found')
+
         overview_plot(data, fname_app=f'_{f_app}')
 
         if not os.path.exists(sd_fname):
