@@ -214,6 +214,16 @@ def dominant_states(data, fname_app=''):
 def main(fnames):
     all_data = []
     for fname in fnames:
+        # construct filenames
+        f_app = os.path.basename(fname)
+        sd_fname = f'cache/site_distribution_{f_app}.csv'
+        ds_fname = f'cache/dominant_states_{f_app}.csv'
+
+        if os.path.exists(sd_fname) and os.path.exists(ds_fname):
+            print(f'All data exists, skipping... ({fname})')
+            continue
+
+        # read data
         with open(fname, 'r') as fd:
             try:
                 data = json.load(fd)
@@ -225,10 +235,6 @@ def main(fnames):
 
         all_data.append(data)
         print(f'[{fname}] Parsing {len(data["snapshots"])} entries')
-
-        f_app = os.path.basename(fname)
-        sd_fname = f'cache/site_distribution_{f_app}.csv'
-        ds_fname = f'cache/dominant_states_{f_app}.csv'
 
         # compute and plot results
         if 'graph' in data:
