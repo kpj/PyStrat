@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 
 import seaborn as sns
+import matplotlib.pyplot as plt
+
 from tqdm import tqdm
 
 
@@ -68,38 +70,38 @@ def fit_slope(data, fname=None):
     if fname is not None:
         pol_obj = np.poly1d(fit)
 
-        sns.plt.figure()
+        plt.figure()
 
-        sns.plt.plot(
+        plt.plot(
             hist_nobin_x,
             hist_nobin[hist_nobin_x],
             'o', zorder=-1, label='site dist')
-        sns.plt.plot(
+        plt.plot(
             hist_nobin_x,
             np.array(hist_nobin_x)**-2.5,
             label=r'$s^{-2.5}$')
-        sns.plt.plot(
+        plt.plot(
             deg_mids[hist_bin_x],
             10**pol_obj(np.log10(deg_mids[hist_bin_x])),
             zorder=-2, label='fit')
-        sns.plt.plot(
+        plt.plot(
             deg_mids[hist_bin_x],
             hist_bin[hist_bin_x],
             '.-', zorder=2, label='binned data')
-        sns.plt.scatter(
+        plt.scatter(
             hist_nobin_x_fitdata,
             hist_nobin[hist_nobin_x_fitdata],
             marker='*', color='yellow', s=10,
             zorder=1, label='considered for binning')
 
-        sns.plt.xscale('log')
-        sns.plt.yscale('log')
+        plt.xscale('log')
+        plt.yscale('log')
 
-        sns.plt.title(rf'Slope: ${fit[0]:.3}$')
-        sns.plt.legend(loc='best')
+        plt.title(rf'Slope: ${fit[0]:.3}$')
+        plt.legend(loc='best')
 
-        sns.plt.savefig(fname)
-        sns.plt.close()
+        plt.savefig(fname)
+        plt.close()
 
     return fit[0]
 
@@ -123,15 +125,16 @@ def site_distribution_slope():
     df = pd.DataFrame(result)
 
     # plot result
-    sns.plt.figure()
+    plt.figure()
+
     sns.barplot(x='alpha', y='slope', hue='p', data=df)
-    sns.plt.savefig('images/site_distribution_slope.pdf')
+    plt.xticks(rotation=90, fontsize=5)
+
+    plt.tight_layout()
+    plt.savefig('images/site_distribution_slope.pdf')
 
 def main():
     site_distribution_slope()
 
 if __name__ == '__main__':
-    sns.set_style('white')
-    sns.plt.style.use('seaborn-poster')
-
     main()
