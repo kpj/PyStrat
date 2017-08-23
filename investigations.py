@@ -22,9 +22,9 @@ def read_data(prefix):
             continue
 
         print(f'Parsing {entry.name}')
-        typ1, typ2, N, p, alpha_rest = entry.name.split('_')
+        *_, p, alpha_rest = entry.name.split('_')
 
-        N = int(N[1:])
+        N = 128  # as set in main.py
         p = float(p)
         alpha = float('.'.join(alpha_rest.split('.')[:-2]))
         df = pd.read_csv(entry.path, index_col=0)
